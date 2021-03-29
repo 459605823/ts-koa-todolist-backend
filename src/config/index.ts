@@ -3,6 +3,6 @@ export default {
   db: {
     username: 'admin',
     password: 'wjn971004',
-    database: 'myFirstDatabase',
+    database: 'todolist',
   },
 };
