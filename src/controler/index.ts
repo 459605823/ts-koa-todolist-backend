@@ -1,51 +1,54 @@
 import Todo from '../models/todo';
+import { InvalidQueryError } from '../response';
 
-export const getTodo = async () => {
-  return new Promise((resolve, reject) => {
-    Todo.find().exec((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export const getTodo = async (ctx, next) => {
+  const res = await Todo.find().sort({ create_time: 'desc' }).exec();
+  if (res) {
+    ctx.result = res;
+  } else {
+    ctx.msg = '获取数据失败';
+  }
+  return next();
 };
 
-export const addTodo = async (data) => {
-  return new Promise((resolve, reject) => {
-    if (data.content) {
-      Todo.create({
-        content: data.content,
-        completed: false,
-        createTime: new Date(),
-      })
-        .then((data) => resolve(data))
-        .catch((err) => reject(err));
+export const addTodo = async (ctx, next) => {
+  const { content } = ctx.request.body;
+  if (!content) {
+    throw new InvalidQueryError();
+  } else {
+    const res = await Todo.create({
+      content,
+      completed: false,
+      createTime: new Date(),
+    });
+    if (res) {
+      ctx.result = res;
+    } else {
+      ctx.msg = '添加数据失败';
     }
-  });
+  }
+  return next();
 };
 
-export const updateTodo = async (id, data) => {
-  return new Promise((resolve, reject) => {
-    Todo.findByIdAndUpdate(id, data).exec((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export const updateTodo = async (ctx, next) => {
+  const res = await Todo.findByIdAndUpdate(
+    ctx.params.id,
+    Object.assign(ctx.request.body, { updateTime: new Date() }),
+  ).exec();
+  if (res) {
+    ctx.result = res;
+  } else {
+    ctx.msg = '修改数据失败';
+  }
+  return next();
 };
 
-export const deleteTodo = async (id) => {
-  return new Promise((resolve, reject) => {
-    Todo.findByIdAndRemove(id).exec((err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export const deleteTodo = async (ctx, next) => {
+  const res = await Todo.findByIdAndRemove(ctx.params.id).exec();
+  if (res) {
+    ctx.result = res;
+  } else {
+    ctx.msg = '删除数据失败';
+  }
+  return next();
 };
