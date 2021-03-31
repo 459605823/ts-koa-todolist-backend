@@ -1,9 +1,4 @@
-import {
-  Success,
-  Failure,
-  ForbiddenError,
-  InvalidQueryError,
-} from '../response';
+import { Success, Failure } from '../response';
 import { Middleware } from 'koa';
 import { logger } from './logger';
 
@@ -16,12 +11,19 @@ export const responseHandler: Middleware = (ctx) => {
 };
 
 export const errorHandler: Middleware = (ctx, next) => {
-  return next().catch((err: ForbiddenError | InvalidQueryError) => {
+  return next().catch((err) => {
     if (!err.code) {
       logger.error(err.stack);
     }
-    ctx.status = err.code;
-    ctx.body = new Failure(err.message);
-    return Promise.resolve();
+    if (err.status === 401) {
+      ctx.status = 401;
+      ctx.body = {
+        error: err.originalError ? err.originalError.message : err.message,
+      };
+    } else {
+      ctx.status = err.code;
+      ctx.body = new Failure(err.message);
+      return Promise.resolve();
+    }
   });
 };

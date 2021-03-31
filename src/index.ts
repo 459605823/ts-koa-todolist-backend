@@ -8,8 +8,8 @@ const databaseUrl = `mongodb+srv://${config.db.username}:${config.db.password}@c
 
 const main = async () => {
   const app = new Koa();
-  app.use(middleware());
   app.use(errorHandler);
+  app.use(middleware());
   app.use(router.routes()).use(router.allowedMethods());
   app.use(responseHandler);
   app.listen(config.port, () => {
