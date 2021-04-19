@@ -12,18 +12,11 @@ export const responseHandler: Middleware = (ctx) => {
 
 export const errorHandler: Middleware = (ctx, next) => {
   return next().catch((err) => {
-    if (!err.code) {
-      logger.error(err.stack);
-    }
-    if (err.status === 401) {
-      ctx.status = 401;
-      ctx.body = {
-        error: err.originalError ? err.originalError.message : err.message,
-      };
-    } else {
-      ctx.status = err.code;
-      ctx.body = new Failure(err.message);
-      return Promise.resolve();
-    }
+    logger.error(err.stack);
+    ctx.status = err.code ?? err.status ? err.code ?? err.status : 500;
+    ctx.body = new Failure(
+      err.originalError ? err.originalError.message : err.message,
+    );
+    return Promise.resolve();
   });
 };
