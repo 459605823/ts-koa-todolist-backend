@@ -4,9 +4,12 @@ import { InvalidQueryError } from '../response';
 import config from '../config';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import axios from 'axios';
+import { ObjectID } from 'mongodb';
 
 export const getTodo = async (ctx, next) => {
-  const res = await Todo.find().sort({ create_time: 'desc' }).exec();
+  const user_id = new ObjectID(ctx.userInfo.id);
+  const res = await Todo.find({ user_id }).sort({ create_time: 'desc' }).exec();
   if (res) {
     ctx.result = res;
   } else {
@@ -16,11 +19,13 @@ export const getTodo = async (ctx, next) => {
 };
 
 export const addTodo = async (ctx, next) => {
+  const user_id = new ObjectID(ctx.userInfo.id);
   const { content } = ctx.request.body;
   if (!content) {
     throw new InvalidQueryError();
   } else {
     const res = await Todo.create({
+      user_id,
       content,
       completed: false,
       createTime: new Date(),
@@ -73,6 +78,7 @@ export const login = async (ctx, next) => {
     ctx.result = jwt.sign(
       {
         username,
+        id: res._id,
       },
       config.secret,
       { expiresIn: '1d' },
@@ -101,6 +107,7 @@ export const register = async (ctx, next) => {
       ctx.result = jwt.sign(
         {
           username,
+          id: result._id,
         },
         config.secret,
         { expiresIn: '1d' },
@@ -108,6 +115,65 @@ export const register = async (ctx, next) => {
     } else {
       ctx.msg = '注册失败';
     }
+  }
+  return next();
+};
+
+export const getUserInfo = async (ctx, next) => {
+  ctx.result = { username: ctx.userInfo.username };
+  return next();
+};
+
+export const githubLogin = async (ctx, next) => {
+  const token = ctx.query.code;
+  const tokenResponse = await axios({
+    method: 'post',
+    url:
+      'https://github.com/login/oauth/access_token?' +
+      `client_id=${config.client_id}&` +
+      `client_secret=${config.client_secrets}&` +
+      `code=${token}`,
+    headers: {
+      accept: 'application/json',
+    },
+  });
+  const accessToken = tokenResponse.data.access_token;
+  const user = await axios({
+    method: 'get',
+    url: `https://api.github.com/user`,
+    headers: {
+      accept: 'application/json',
+      Authorization: `token ${accessToken}`,
+    },
+  });
+  const res = await User.findOne({ username: user.data.name }).exec();
+  if (res) {
+    ctx.result = {
+      token: jwt.sign(
+        {
+          username: user.data.name,
+          id: res._id,
+        },
+        config.secret,
+        { expiresIn: '1d' },
+      ),
+      username: user.data.name,
+    };
+  } else {
+    const result = await User.create({
+      username: user.data.name,
+    });
+    ctx.result = {
+      token: jwt.sign(
+        {
+          username: user.data.name,
+          id: result._id,
+        },
+        config.secret,
+        { expiresIn: '1d' },
+      ),
+      username: user.data.name,
+    };
   }
   return next();
 };

@@ -1,4 +1,5 @@
 import { Schema, Document, model } from 'mongoose';
+import { ObjectID } from 'mongodb';
 
 export interface Todo extends Document {
   content: string;
@@ -9,6 +10,7 @@ export interface Todo extends Document {
 
 const todoSchema = new Schema(
   {
+    user_id: ObjectID,
     content: String,
     completed: Boolean,
     create_time: { type: Date, default: Date.now },

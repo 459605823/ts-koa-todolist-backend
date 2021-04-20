@@ -9,4 +9,6 @@ export default {
     password: 'wjn971004',
     database: 'todolist',
   },
+  client_id: '7cb56203f4b43e7aea70',
+  client_secrets: '52cc9dd6da6ac151c716ffa06f419dabb86b0cb1',
 };
