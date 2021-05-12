@@ -75,14 +75,10 @@ export const login = async (ctx, next) => {
   } else if (!bcrypt.compareSync(password, res.password)) {
     ctx.msg = '密码错误';
   } else {
-    ctx.result = jwt.sign(
-      {
-        username,
-        id: res._id,
-      },
-      config.secret,
-      { expiresIn: '1d' },
-    );
+    ctx.result = {
+      token: jwt.sign({username, id: res._id,}, config.secret, { expiresIn: '1d' }), 
+      username
+    };
   }
   return next();
 };
