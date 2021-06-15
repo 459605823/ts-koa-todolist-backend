@@ -1,15 +1,16 @@
 import Todo from '../models/todo';
 import User from '../models/user';
-import { InvalidQueryError } from '../response';
-import config from '../config';
+import {InvalidQueryError} from '../response';
+import {SECRET, CLIENT_ID, CLIENT_SECRETS} from '../config';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import axios from 'axios';
-import { ObjectID } from 'mongodb';
+import {ObjectID} from 'mongodb';
+import {Middleware} from 'koa';
 
-export const getTodo = async (ctx, next) => {
+export const getTodo: Middleware = async (ctx, next) => {
   const user_id = new ObjectID(ctx.userInfo.id);
-  const res = await Todo.find({ user_id }).sort({ create_time: 'desc' }).exec();
+  const res = await Todo.find({user_id}).sort({create_time: 'desc'}).exec();
   if (res) {
     ctx.result = res;
   } else {
@@ -18,9 +19,9 @@ export const getTodo = async (ctx, next) => {
   return next();
 };
 
-export const addTodo = async (ctx, next) => {
+export const addTodo: Middleware = async (ctx, next) => {
   const user_id = new ObjectID(ctx.userInfo.id);
-  const { content } = ctx.request.body;
+  const {content} = ctx.request.body;
   if (!content) {
     throw new InvalidQueryError();
   } else {
@@ -39,10 +40,10 @@ export const addTodo = async (ctx, next) => {
   return next();
 };
 
-export const updateTodo = async (ctx, next) => {
+export const updateTodo: Middleware = async (ctx, next) => {
   const res = await Todo.findByIdAndUpdate(
     ctx.params.id,
-    Object.assign(ctx.request.body, { updateTime: new Date() }),
+    Object.assign(ctx.request.body, {updateTime: new Date()})
   ).exec();
   if (res) {
     ctx.result = res;
@@ -52,7 +53,7 @@ export const updateTodo = async (ctx, next) => {
   return next();
 };
 
-export const deleteTodo = async (ctx, next) => {
+export const deleteTodo: Middleware = async (ctx, next) => {
   const res = await Todo.findByIdAndRemove(ctx.params.id).exec();
   if (res) {
     ctx.result = res;
@@ -62,8 +63,8 @@ export const deleteTodo = async (ctx, next) => {
   return next();
 };
 
-export const login = async (ctx, next) => {
-  const { username, password } = ctx.request.body;
+export const login: Middleware = async (ctx, next) => {
+  const {username, password} = ctx.request.body;
   if (!username || !password) {
     throw new InvalidQueryError();
   }
@@ -76,15 +77,15 @@ export const login = async (ctx, next) => {
     ctx.msg = '密码错误';
   } else {
     ctx.result = {
-      token: jwt.sign({username, id: res._id,}, config.secret, { expiresIn: '1d' }), 
-      username
+      token: jwt.sign({username, id: res._id}, SECRET, {expiresIn: '1d'}),
+      username,
     };
   }
   return next();
 };
 
-export const register = async (ctx, next) => {
-  const { username, password } = ctx.request.body;
+export const register: Middleware = async (ctx, next) => {
+  const {username, password} = ctx.request.body;
   if (!username || !password) {
     throw new InvalidQueryError();
   }
@@ -105,8 +106,8 @@ export const register = async (ctx, next) => {
           username,
           id: result._id,
         },
-        config.secret,
-        { expiresIn: '1d' },
+        SECRET,
+        {expiresIn: '1d'}
       );
     } else {
       ctx.msg = '注册失败';
@@ -115,19 +116,19 @@ export const register = async (ctx, next) => {
   return next();
 };
 
-export const getUserInfo = async (ctx, next) => {
-  ctx.result = { username: ctx.userInfo.username };
+export const getUserInfo: Middleware = async (ctx, next) => {
+  ctx.result = {username: ctx.userInfo.username};
   return next();
 };
 
-export const githubLogin = async (ctx, next) => {
+export const githubLogin: Middleware = async (ctx, next) => {
   const token = ctx.query.code;
   const tokenResponse = await axios({
     method: 'post',
     url:
       'https://github.com/login/oauth/access_token?' +
-      `client_id=${config.client_id}&` +
-      `client_secret=${config.client_secrets}&` +
+      `client_id=${CLIENT_ID}&` +
+      `client_secret=${CLIENT_SECRETS}&` +
       `code=${token}`,
     headers: {
       accept: 'application/json',
@@ -142,7 +143,7 @@ export const githubLogin = async (ctx, next) => {
       Authorization: `token ${accessToken}`,
     },
   });
-  const res = await User.findOne({ username: user.data.name }).exec();
+  const res = await User.findOne({username: user.data.name}).exec();
   if (res) {
     ctx.result = {
       token: jwt.sign(
@@ -150,8 +151,8 @@ export const githubLogin = async (ctx, next) => {
           username: user.data.name,
           id: res._id,
         },
-        config.secret,
-        { expiresIn: '1d' },
+        SECRET,
+        {expiresIn: '1d'}
       ),
       username: user.data.name,
     };
@@ -165,8 +166,8 @@ export const githubLogin = async (ctx, next) => {
           username: user.data.name,
           id: result._id,
         },
-        config.secret,
-        { expiresIn: '1d' },
+        SECRET,
+        {expiresIn: '1d'}
       ),
       username: user.data.name,
     };

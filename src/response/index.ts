@@ -2,21 +2,21 @@ class response {
   data!: any;
   message!: string;
   errno!: number;
-  constructor(data, message) {
+  constructor(data: any, message: string) {
     this.data = data;
     this.message = message;
   }
 }
 
 export class Success extends response {
-  constructor(data, message = 'Success!') {
+  constructor(data: any, message = 'Success!') {
     super(data, message);
     this.errno = 1;
   }
 }
 
 export class Failure extends response {
-  constructor(data, message = 'Failure!') {
+  constructor(data: any, message = 'Failure!') {
     super(data, message);
     this.errno = 0;
   }
@@ -25,7 +25,7 @@ export class Failure extends response {
 export class CodeError extends Error {
   code!: number;
   message!: string;
-  constructor(message = '未知错误', code) {
+  constructor(message = '未知错误', code: number) {
     super(message);
     this.code = code;
   }

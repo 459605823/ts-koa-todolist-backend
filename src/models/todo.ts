@@ -1,5 +1,5 @@
-import { Schema, Document, model } from 'mongoose';
-import { ObjectID } from 'mongodb';
+import {Schema, Document, model} from 'mongoose';
+import {ObjectID} from 'mongodb';
 
 export interface Todo extends Document {
   content: string;
@@ -13,27 +13,27 @@ const todoSchema = new Schema(
     user_id: ObjectID,
     content: String,
     completed: Boolean,
-    create_time: { type: Date, default: Date.now },
-    update_time: { type: Date, default: Date.now },
+    create_time: {type: Date, default: Date.now},
+    update_time: {type: Date, default: Date.now},
   },
-  { versionKey: false },
+  {versionKey: false}
 );
 
 todoSchema
   .virtual('createTime')
-  .set(function (this: any, v) {
+  .set(function (this: Todo, v: Date) {
     this.create_time = v;
   })
-  .get(function (this: any) {
+  .get(function (this: Todo) {
     return this.create_time.toLocaleString();
   });
 
 todoSchema
   .virtual('updateTime')
-  .set(function (this: any, v) {
+  .set(function (this: Todo, v: Date) {
     this.update_time = v;
   })
-  .get(function (this: any) {
+  .get(function (this: Todo) {
     return this.update_time.toLocaleString();
   });
 

@@ -1,4 +1,4 @@
-import { connect, connection as db } from 'mongoose';
+import {connect, connection as db} from 'mongoose';
 
 export default async (url: string) => {
   connect(url, {

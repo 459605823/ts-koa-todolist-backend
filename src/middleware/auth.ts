@@ -1,27 +1,27 @@
-import { Middleware } from 'koa';
+import {Middleware, Context} from 'koa';
 import koaJwt from 'koa-jwt';
-import config from '../config';
+import {SECRET} from '../config';
 import jwt from 'jsonwebtoken';
 
-export const handleTokenMiddleware = async (ctx, next) => {
+export const handleTokenMiddleware: Middleware = async (ctx, next) => {
   // 将 token 中的数据解密后存到 ctx 中
   try {
     if (typeof ctx.request.headers.authorization === 'string') {
       const token = ctx.request.headers.authorization;
-      ctx.userInfo = jwt.verify(token, config.secret);
+      ctx.userInfo = jwt.verify(token, SECRET);
     } else {
-      throw { code: 401, message: 'no authorization' };
+      throw {code: 401, message: 'no authorization'};
     }
   } catch (err) {
-    throw { code: 401, message: err.message };
+    throw {code: 401, message: err.message};
   }
   await next();
 };
 
-export const koaJwtMiddleware = (opts?): Middleware => {
+export const koaJwtMiddleware = (): Middleware => {
   return koaJwt({
-    secret: config.secret,
-    getToken: (ctx: any) => ctx.header.authorization,
+    secret: SECRET as string,
+    getToken: (ctx: Context) => ctx.header.authorization as string,
   }).unless({
     path: ['/api/login'],
   });

@@ -6,7 +6,7 @@ import {
   deleteTodo,
   getUserInfo,
 } from '../controler';
-import { handleTokenMiddleware, koaJwtMiddleware } from '../middleware/auth';
+import {handleTokenMiddleware, koaJwtMiddleware} from '../middleware/auth';
 const router = new Router();
 
 router.prefix('/api');

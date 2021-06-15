@@ -1,5 +1,6 @@
+import {Context} from 'koa';
 export default {
-  origin: function (ctx) {
+  origin: function (ctx: Context) {
     if (ctx.url === '/test') {
       // 这里可以配置不运行跨域的接口地址
       return false;

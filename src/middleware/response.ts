@@ -1,6 +1,6 @@
-import { Success, Failure } from '../response';
-import { Middleware } from 'koa';
-import { logger } from './logger';
+import {Success, Failure} from '../response';
+import {Middleware} from 'koa';
+import {logger} from './logger';
 
 export const responseHandler: Middleware = (ctx) => {
   if (ctx.result) {
@@ -15,7 +15,7 @@ export const errorHandler: Middleware = (ctx, next) => {
     logger.error(err.stack);
     ctx.status = err.code ?? err.status ? err.code ?? err.status : 500;
     ctx.body = new Failure(
-      err.originalError ? err.originalError.message : err.message,
+      err.originalError ? err.originalError.message : err.message
     );
     return Promise.resolve();
   });

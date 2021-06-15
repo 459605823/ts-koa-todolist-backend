@@ -1,19 +1,20 @@
 import fs from 'fs';
 import path from 'path';
-import { configure, getLogger } from 'log4js';
-import config from '../config';
+import {configure, getLogger} from 'log4js';
+import {Middleware} from 'koa';
 
-const logsDir = path.parse(config.logPath).dir;
+const logPath = path.resolve(__dirname, '../logs/access.log');
+const logsDir = path.parse(logPath).dir;
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir);
 }
 
 configure({
   appenders: {
-    console: { type: 'console' },
+    console: {type: 'console'},
     dateFile: {
       type: 'dateFile',
-      filename: config.logPath,
+      filename: logPath,
       pattern: '-yyyy-MM-dd',
     },
   },
@@ -27,24 +28,18 @@ configure({
 
 export const logger = getLogger();
 
-export const loggerMiddleware = async (ctx, next) => {
+export const loggerMiddleware: Middleware = async (ctx, next) => {
   // 请求开始时间
   const start = new Date().getTime();
   await next();
   // 结束时间
   const ms = new Date().getTime() - start;
   // 打印出请求相关参数
-  const remoteAddress =
-    ctx.headers['x-forwarded-for'] ||
-    ctx.ip ||
-    ctx.ips ||
-    (ctx.socket &&
-      (ctx.socket.remoteAddress ||
-        (ctx.socket.socket && ctx.socket.socket.remoteAddress)));
-  let logText = `${ctx.method} ${ctx.status} ${
+  const remoteAddress = ctx.headers['x-forwarded-for'] || ctx.ip || ctx.ips;
+  const logText = `${ctx.method} ${ctx.status} ${
     ctx.url
   } 请求参数： ${JSON.stringify(ctx.request.body)} 响应参数： ${JSON.stringify(
-    ctx.body,
+    ctx.body
   )} - ${remoteAddress} - ${ms}ms`;
   logger.info(logText);
 };

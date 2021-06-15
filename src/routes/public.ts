@@ -1,5 +1,5 @@
 import Router from 'koa-router';
-import { login, register, githubLogin } from '../controler';
+import {login, register, githubLogin} from '../controler';
 
 const router = new Router();
 

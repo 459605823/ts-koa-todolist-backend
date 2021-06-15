@@ -5,7 +5,7 @@ import bodyParser from 'koa-bodyparser';
 // 安全相关
 import helmet from 'koa-helmet';
 import compose from 'koa-compose';
-import { loggerMiddleware } from './logger';
+import {loggerMiddleware} from './logger';
 import corsHandler from './cors';
 
 export default function middleware() {
